@@ -5,51 +5,91 @@ import os
 import pandas as pd
 import time
 import random
+from fake_useragent import UserAgent as ua
 
 columns=['標題', '觀看數', '留言數','作者給分','平均分數','評分人數', '文章內容','發文時間','連結']
 data=[]
-
+mis_pag=[]
+error=0
+none_page=0
+fulldata=0
+thrt=0
 keywords = ['台北美食']
+
 for keyword in keywords:
     print(f'---------{keyword}職位---------')
     
-    for i in range(3):
+    for i in range(2):
         r=i+1
-        url='https://www.pixnet.net/mainpage/api/tags/%E5%8F%B0%E5%8C%97%E7%BE%8E%E9%A3%9F/feeds?page={}&per_page=5&filter=articles&sort=latest&refer=https%3A%2F%2Fwww.pixnet.net%2Fblog%2Farticles%2Fcategory%2F26'.format(r)
+        ua1=ua().random
+        url='https://www.pixnet.net/mainpage/api/tags/%E5%8F%B0%E5%8C%97%E7%BE%8E%E9%A3%9F/feeds?page={}&per_page=10&filter=articles&sort=latest&refer=https%3A%2F%2Fwww.pixnet.net%2Fblog%2Farticles%2Fcategory%2F26'.format(r)
         
-        params={'page':r,'per_page':'5','filter':'articles','sort':'latest','refer':'https://www.pixnet.net/blog/articles/category/26'}
-        headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36'}
+        params={'page':r,'per_page':'10','filter':'articles','sort':'latest','refer':'https://www.pixnet.net/blog/articles/category/26'}
+        headers = {'User-Agent':"".format(ua1)}
         ss=requests.session()
         try:
             res =ss.get(url=url , headers=headers , params=params)
         except IndexError as e:
             break
         js=json.loads(res.text)
-        for n in range(0,5):
-            title=js['data']['feeds'][n]['title']
-            reach=js['data']['feeds'][n]['hit']
-            reply=js['data']['feeds'][n]['reply_count']
-            memcerr=js['data']['feeds'][n]['poi']['member_rating']
-            avgr=js['data']['feeds'][n]['poi']['rating']['avg']
-            countr=js['data']['feeds'][n]['poi']['rating']['count']
-            avt=js['data']['feeds'][n]['avatar'].split('/')[4]
-            artc=js['data']['feeds'][n]['link'].split('-')[0].split('/')[-1]
-            link=js['data']['feeds'][0]['link']
-            urlc='https://emma.pixnet.cc/blog/articles/{}?user={}&limit=5&format=json&_=1624680317272'.format(artc,avt)
-            headersc = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36'}
-            resc = requests.get(url=urlc , headers=headersc )
-            jsc=json.loads(resc.text)
-            ajc=jsc['article']['body']
-            artsoupc = BeautifulSoup(ajc,'html.parser')
-            t = time.localtime(int(jsc['article']['public_at']))
-            a=time.asctime(t)
+        
+        if len(js['data']['feeds']) !=0:
+            for n in range(0,10):
+                title=js['data']['feeds'][n]['title']
+                reach=js['data']['feeds'][n]['hit']
+                reply=js['data']['feeds'][n]['reply_count']
+                if len(js['data']['feeds'][n]['poi']) !=0 :                
+                    memcerr=js['data']['feeds'][n]['poi']['member_rating']
+                    avgr=js['data']['feeds'][n]['poi']['rating']['avg']
+                    countr=js['data']['feeds'][n]['poi']['rating']['count']
+                else:
+                    memcerr=None
+                    avgr=None
+                    countr=None
+
+
+                avt=js['data']['feeds'][n]['avatar'].split('/')[4]
+                if js['data']['feeds'][n]['link'] is not None :
+                    artc=js['data']['feeds'][n]['link'].split('-')[0].split('/')[-1]
+                    link=js['data']['feeds'][n]['link']
+                    rere=random.randint(1,9999)
+                    ua2=ua().random
+                    urlc='https://emma.pixnet.cc/blog/articles/{}?user={}&limit=10&format=json&_=162468031{}'.format(artc,avt,rere)
+                    headersc = {'User-Agent':ua2}
+                    resc = requests.get(url=urlc , headers=headersc )
+                    jsc=json.loads(resc.text)
+                    if jsc['error'] !=1:
+
+                        ajc=jsc['article']['body']
+                        artsoupc = BeautifulSoup(ajc,'html.parser')
+                        t = time.localtime(int(jsc['article']['public_at']))
+                        a=time.asctime(t)
+
+                        rdata=[title,reach,reply,memcerr,avgr,countr,artsoupc.text,a,link]
+                        data.append(rdata)
+                        fulldata+=1
+                    else:
+                        error+=1
+                        pass
+                else:
+                    error+=1
+                    
+
             
-            rdata=[title,reach,reply,memcerr,avgr,countr,artsoupc.text,a,link]
-            data.append(rdata)
+        else:
+            none_page+=1
+            mis_pag.append(js['data']['page'])
+        r_t=random.randint(1,8)
+        time.sleep(r_t)
+        print("page{} break {} s".format(r,r_t))
+        thrt=thrt+r_t
         
-        time.sleep(random.randint(1,10))
-        
+print('total_break_time: {}s'.format(thrt))
+print("no_article:{}".format(error))
+print("none_page:{}".format(none_page))
+print("missing_page:{}".format(mis_pag))
+print("fulldata:{}".format(fulldata))
 df =pd.DataFrame(data=data,columns=columns)
 df          
-     
+    
         

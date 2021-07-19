@@ -6,7 +6,34 @@ import pandas as pd
 import time
 import random
 from fake_useragent import UserAgent as ua
-
+from random import choice
+vvls=['18.235.220.172',
+ '20.94.229.106',
+ '35.172.135.29',
+ '77.247.126.158',
+ '143.198.239.216',
+ '92.204.129.161',
+ '162.243.167.58',
+ '167.172.132.136',
+ '132.145.137.26',
+ '3.136.37.78',
+ '205.185.118.53',
+ '103.83.37.11',
+ '52.25.159.130',
+ '12.218.209.130',
+ '24.172.82.94',
+ '159.203.188.130',
+ '52.251.88.114',
+ '172.245.92.238',
+ '165.227.80.176',
+ '51.81.82.175',
+ '165.227.71.60',
+ '198.255.161.102',
+ '157.230.95.4',
+ '162.243.168.215',
+ '216.236.198.30',
+ '209.126.13.170',
+ '50.16.33.219']
 columns=['標題', '觀看數', '留言數','作者給分','平均分數','評分人數', '文章內容','發文時間','連結']
 data=[]
 mis_pag=[]
@@ -19,22 +46,23 @@ keywords = ['台北美食']
 for keyword in keywords:
     print(f'---------{keyword}職位---------')
     
-    for i in range(2):
+    for i in range(1000):
         r=i+1
         ua1=ua().random
-        url='https://www.pixnet.net/mainpage/api/tags/%E5%8F%B0%E5%8C%97%E7%BE%8E%E9%A3%9F/feeds?page={}&per_page=10&filter=articles&sort=latest&refer=https%3A%2F%2Fwww.pixnet.net%2Fblog%2Farticles%2Fcategory%2F26'.format(r)
-        
-        params={'page':r,'per_page':'10','filter':'articles','sort':'latest','refer':'https://www.pixnet.net/blog/articles/category/26'}
+        url='https://www.pixnet.net/mainpage/api/tags/%E5%8F%B0%E5%8C%97%E7%BE%8E%E9%A3%9F/feeds?page={}&per_page=5&filter=articles&sort=latest&refer=https%3A%2F%2Fwww.pixnet.net%2Fblog%2Farticles%2Fcategory%2F26'.format(r)
+        a_=choice(vvls)
+        proxies = { 'http': 'http://' + a_ }
+        params={'page':r,'per_page':'5','filter':'articles','sort':'latest','refer':'https://www.pixnet.net/blog/articles/category/26'}
         headers = {'User-Agent':"".format(ua1)}
         ss=requests.session()
         try:
-            res =ss.get(url=url , headers=headers , params=params)
+            res =ss.get(url=url , headers=headers , params=params,proxies=proxies)
         except IndexError as e:
             break
         js=json.loads(res.text)
         
         if len(js['data']['feeds']) !=0:
-            for n in range(0,10):
+            for n in range(0,5):
                 title=js['data']['feeds'][n]['title']
                 reach=js['data']['feeds'][n]['hit']
                 reply=js['data']['feeds'][n]['reply_count']
@@ -81,7 +109,7 @@ for keyword in keywords:
             mis_pag.append(js['data']['page'])
         r_t=random.randint(1,8)
         time.sleep(r_t)
-        print("page{} break {} s".format(r,r_t))
+        #print("page{} break {} s".format(r,r_t))
         thrt=thrt+r_t
         
 print('total_break_time: {}s'.format(thrt))
@@ -92,4 +120,3 @@ print("fulldata:{}".format(fulldata))
 df =pd.DataFrame(data=data,columns=columns)
 df          
     
-        

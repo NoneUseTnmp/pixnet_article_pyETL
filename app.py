@@ -43,7 +43,7 @@ fulldata=0
 thrt=0
 keywords = ['台北美食']
 
-r=324
+r=566
 
 url0='https://www.pixnet.net/tags/%E5%8F%B0%E5%8C%97%E7%BE%8E%E9%A3%9F'
 ua0=ua().random      
@@ -131,7 +131,7 @@ for keyword in keywords:
 
             print('{}'.format(r))
             r+=1
-            if r==362:
+            if r==606:
                 
                 print('done')
                 break

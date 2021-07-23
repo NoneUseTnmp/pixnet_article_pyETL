@@ -43,20 +43,31 @@ fulldata=0
 thrt=0
 keywords = ['台北美食']
 
+r=324
+
+url0='https://www.pixnet.net/tags/%E5%8F%B0%E5%8C%97%E7%BE%8E%E9%A3%9F'
+ua0=ua().random      
+#params={'page':r,'per_page':'5','filter':'articles','sort':'latest','refer':'https://www.pixnet.net/blog/articles/category/26'}
+headers0 = {'User-Agent':"".format(ua0)}
+ss=requests.session()
+res0= ss.get(url0, headers=headers0)
+
+
 for keyword in keywords:
     print(f'---------{keyword}職位---------')
     
-    for i in range(1000):
-        r=i+1
+    while True:
+        
         ua1=ua().random
         url='https://www.pixnet.net/mainpage/api/tags/%E5%8F%B0%E5%8C%97%E7%BE%8E%E9%A3%9F/feeds?page={}&per_page=5&filter=articles&sort=latest&refer=https%3A%2F%2Fwww.pixnet.net%2Fblog%2Farticles%2Fcategory%2F26'.format(r)
         a_=choice(vvls)
-        proxies = { 'http': 'http://' + a_ }
-        params={'page':r,'per_page':'5','filter':'articles','sort':'latest','refer':'https://www.pixnet.net/blog/articles/category/26'}
+        #print(a_)
+        proxies1 = { 'http': 'http://' + a_ }
+        parameters={'page':r,'per_page':'5','filter':'articles','sort':'latest','refer':'https://www.pixnet.net/blog/articles/category/26'}
         headers = {'User-Agent':"".format(ua1)}
-        ss=requests.session()
+        #ss=requests.session()
         try:
-            res =ss.get(url=url , headers=headers , params=params,proxies=proxies)
+            res =ss.get(url=url , headers=headers ,proxies=proxies1)
         except IndexError as e:
             break
         js=json.loads(res.text)
@@ -82,9 +93,13 @@ for keyword in keywords:
                     link=js['data']['feeds'][n]['link']
                     rere=random.randint(1,9999)
                     ua2=ua().random
-                    urlc='https://emma.pixnet.cc/blog/articles/{}?user={}&limit=10&format=json&_=162468031{}'.format(artc,avt,rere)
+                    b_=choice(vvls)
+                    #print(b_)
+                    proxies2 = { 'http': 'http://' + b_ }
+                    urlc='https://emma.pixnet.cc/blog/articles/{}?user={}&limit=5&format=json&_=162468031{}'.format(artc,avt,rere)
                     headersc = {'User-Agent':ua2}
-                    resc = requests.get(url=urlc , headers=headersc )
+                    #Parameters={'utm_source':'PIXNET','utm_medium':'Hashtag_article'}
+                    resc = requests.get(url=urlc , headers=headersc,proxies=proxies2)
                     jsc=json.loads(resc.text)
                     if jsc['error'] !=1:
 
@@ -96,21 +111,37 @@ for keyword in keywords:
                         rdata=[title,reach,reply,memcerr,avgr,countr,artsoupc.text,a,link]
                         data.append(rdata)
                         fulldata+=1
+                        
+                        print('.')
+                        r_t=random.randint(1,3)
+                        time.sleep(r_t)
+                    elif jsc['error'] ==1:
+                        
+                        print('Exceed Anonymous Rate Limit')
+                        break
+                    
                     else:
+                        print('else')
                         error+=1
-                        pass
-                else:
-                    error+=1
+                        
+                        
+                
+                    
                     
 
-            
+            print('{}'.format(r))
+            r+=1
+            if r==362:
+                
+                print('done')
+                break
+
         else:
-            none_page+=1
             mis_pag.append(js['data']['page'])
-        r_t=random.randint(1,8)
-        time.sleep(r_t)
+            break
+        
         #print("page{} break {} s".format(r,r_t))
-        thrt=thrt+r_t
+        #thrt=thrt+r_t
         
 print('total_break_time: {}s'.format(thrt))
 print("no_article:{}".format(error))
@@ -120,3 +151,4 @@ print("fulldata:{}".format(fulldata))
 df =pd.DataFrame(data=data,columns=columns)
 df          
     
+        
